@@ -1,0 +1,41 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Deploy SpotifyNewReleases web app
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build Github Pages Angular Site
+      run: npm run build -- --base-href https://${{ github.actor }}.github.io/${{ github.event.repository.name }}/
+
+    - name: Deploy
+      if: success()
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: dist/${{ github.event.repository.name }}/browser
+        enable_jekyll: true
